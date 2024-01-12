@@ -1,0 +1,28 @@
+split      : "AUROC"  
+gpu_ids    : '0'
+use_wandb  : False
+resume     : False
+ckpt       : "_"
+
+loss_wgts  : [0.7,1.0,0.01]
+score_wgts : [1,0,0]           
+branch_opt : -1
+gate_temp  : 100
+
+dataset    : "tiny_imagenet"   
+plus_num   : 10          
+id_set     : "cifar10"     
+ood_set    : "svhn"        
+
+num_workers: 2
+epoch_num  : 150              
+batch_size : 128              
+save_step  : 10               
+test_step  : 1               
+backbone   : "resnet18"   
+
+optimizer  : "SGD"       
+lr         : 0.1             
+gamma      : 0.1
+milestones : [130]           
+lgs_temp    : 100
