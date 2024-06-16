@@ -11,33 +11,33 @@ from sklearn.metrics import roc_curve, auc, precision_recall_curve
 
 MAX_NUM = 999999
 
-def min_max_norm(data):
-    return (data - data.min()) / (data.max() - data.min())
-
 def compute_score(logit_list, softmax_list, score_wgts, branch_opt, fts=None):
-    msp  = min_max_norm(softmax_list[branch_opt].max(1)[0])
+    msp  = softmax_list[branch_opt].max(1)[0]
     mls  = logit_list[branch_opt].max(1)[0]
     if score_wgts[2] != 0:
         ftl = fts.mean(dim = [2,3]).norm(dim = 1, p = 2)
         temp = (score_wgts[0]*msp + score_wgts[1]*mls + score_wgts[2]*ftl)
     else:
         temp = (score_wgts[0]*msp + score_wgts[1]*mls)
-    
     return temp
-   
-def update_dest(acc_meter, key, content, target):
-    if not key in acc_meter.keys():
-        acc_meter[key] = AverageMeter()
-    acc_tmp = accuracy(content, target, topk=(1,))
-    acc_meter[key].update(acc_tmp[0], len(target))
+
 
 def evaluation(model, test_loader, out_loader, **options):
 
     model.eval()
-    correct, total, n = 0, 0, 0
     torch.cuda.empty_cache()
     
-    pred_close, pred_open, labels_close, labels_open, score_close, score_open = [], [], [], [], [], []
+    correct = 0
+    total = 0
+    n = 0
+    
+    pred_close = []
+    pred_open = []
+    labels_close = []
+    labels_open = []
+    score_close = []
+    score_open = []
+    
     open_labels = torch.zeros(MAX_NUM)
     probs = torch.zeros(MAX_NUM)
     
@@ -118,11 +118,11 @@ def evaluation(model, test_loader, out_loader, **options):
     precision, recall, _ = precision_recall_curve(np.bitwise_not((open_labels).astype(bool)), -prob)
     aupr_out = auc(recall,precision)
 
-    print('Accuracy: {:.3f}, '      .format(acc), 
+    print('Accuracy (%): {:.3f}, '  .format(acc), 
           'AUROC: {:.5f}, '         .format(auroc), 
           'AUPR_IN: {:.5f}, '       .format(aupr_in), 
           'AUPR_OUT: {:.5f}, '      .format(aupr_out),
-          'Macro F1-score: {:.5f}'.format(macro_f1), 
+          'Macro F1-score: {:.5f}'  .format(macro_f1), 
         )
     
     return acc, auroc, aupr_in, aupr_out, macro_f1
